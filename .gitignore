@@ -2,3 +2,7 @@
 PID_motor_controller_vivado/motor_hardware/*
 PID_motor_controller_vivado/vivado*
 PID_motor_controller_vivado/.Xli/
+PID_motor_controller_vivado/*.jou
+PID_motor_controller_vivado/*.log
+*.jou
+*.log
