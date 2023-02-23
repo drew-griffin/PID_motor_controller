@@ -26,6 +26,8 @@ module nexysa7fpga
     seg,
     sw,
     clk,
+    uart_rtl_rxd,
+    uart_rtl_txd,
     // debug header
     JA);
     
@@ -48,6 +50,8 @@ module nexysa7fpga
   input [15:0]sw;
   input clk;
   output [3:0] JA;
+  output uart_rtl_txd;
+  input  uart_rtl_rxd;
 
   wire RGB2_Blue;
   wire RGB2_Green;
@@ -71,12 +75,15 @@ module nexysa7fpga
   wire [3:0] JA;
   wire [31:0] control_reg;
   wire [31:0] gpio_rtl_0;
-    
+  wire SA; 
+  wire SB; 
+  wire EN; 
+  wire DIR; 
   // assign signals to the JA debug header
-  assign JA[0] = clkPWM;
-  assign JA[1] = RGB1_Blue;
-  assign JA[2] = RGB1_Green;
-  assign JA[3] = RGB1_Red;
+  assign JA[0] = DIR;
+  assign JA[1] = EN;
+  assign SA = JA[2];
+  assign SB = JA[2]; //not used
   
   // wrap the gpio output to the rgbPWM control register
   assign control_reg = gpio_rtl_0;
@@ -95,12 +102,12 @@ module nexysa7fpga
         .clk_100MHz(clk),
         .controlReg_0(control_reg),
         .dp_0(dp),
-        .gpio_rtl_0_tri_o(gpio_rtl_0),
         .led_0(led),
         .resetn(btnCpuReset),
-        .rgbBLUE_0(RGB1_Blue),
-        .rgbGREEN_0(RGB1_Green),
-        .rgbRED_0(RGB1_Red),
         .seg_0(seg),
-        .sw_0(sw));
+        .sw_0(sw),
+        .uart_rtl_0_rxd(uart_rtl_rxd),
+        .uart_rtl_0_txd(uart_rtl_txd),
+        .EN(EN), 
+        .SA(SA));
 endmodule

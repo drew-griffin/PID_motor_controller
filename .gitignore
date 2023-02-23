@@ -6,3 +6,8 @@ PID_motor_controller_vivado/*.jou
 PID_motor_controller_vivado/*.log
 *.jou
 *.log
+PID_motor_controller_vitis/.analytics
+PID_motor_controller_vitis/.metadata/*
+PID_motor_controller_vitis/.sdk/*
+PID_motor_controller_vitis/RemoteSystemsTempFiles/*
+PID_motor_controller_vitis/webtalk/*
