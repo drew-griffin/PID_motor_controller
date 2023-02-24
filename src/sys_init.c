@@ -22,7 +22,7 @@
 #include "xintc.h"
 #include "sys_init.h"
 #include "fit.h"
-#include "user_input.h"
+#include "cntrl_logic.h"
 
 /*********Peripheral Device Constants****************************/
 //Definition for Interrupt Controller
@@ -81,5 +81,6 @@ int system_init(void) {
 
     // enable/disable the interrupts
 	XIntc_Enable(&INTC_Inst, FIT_INTR_NUM);
+	XIntc_Disable(&INTC_Inst, XPAR_MICROBLAZE_0_AXI_INTC_AXI_TIMEBASE_WDT_0_WDT_INTERRUPT_INTR);
 	return XST_SUCCESS;
 }

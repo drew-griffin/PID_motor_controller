@@ -20,6 +20,7 @@
 #define FIT_H
 
 #include "xparameters.h"
+#include "cntrl_logic.h"
 
 /*********Peripheral Device Constants****************************/
 // Definitions for Fixed Interval timer - 100 MHz input clock, 4Hz output clock

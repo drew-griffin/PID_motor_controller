@@ -19,7 +19,6 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include "fit.h"
-#include "user_input.h"
 
 #define HEART_BEAT      0x00008000
 
@@ -34,14 +33,13 @@
 */
 void FIT_Handler(void) {
     static bool isInitialized = false; // starts up led heartbeat
-    static uint32_t led_heartbeat;
+    static bool dpOn;
 
     if (!isInitialized) {
-        led_heartbeat = HEART_BEAT;
+        dpOn = true;
         isInitialized = true;
     }
 
-    NX4IO_setLEDs(led_heartbeat);
-
-    led_heartbeat ^= HEART_BEAT;
+    dpOn = (dpOn) ? false : true;
+    NX4IO_SSEG_setDecPt (SSEGHI, DIGIT7, dpOn);
 }

@@ -50,8 +50,11 @@
 #include "xil_printf.h"
 #include "microblaze_sleep.h"
 #include "sys_init.h"
+#include "cntrl_logic.h"
 
 
+/*****************PID Control Instances*****************/
+static ptr_user_io_t uIO;
 
 int main()
 {
@@ -67,12 +70,15 @@ int main()
         xil_printf("FATAL(main): System initialization failed\r\n");
         return 1;
     }
+    init_IO_struct(uIO);
+    
 
     microblaze_enable_interrupts();
     while(1)
     {
-        xil_printf("Hello World\n\r");
-        usleep(1000 * 1000);
+        read_user_IO(uIO);
+        update_pid(uIO);
+        display();
     }
     
     microblaze_disable_interrupts();
