@@ -28,8 +28,11 @@ module nexysa7fpga
     clk,
     uart_rtl_rxd,
     uart_rtl_txd,
-    // debug header
-    JA);
+    // debug header/Motor
+    JA_0,
+    JA_1,
+    // encoder header
+    JC);
     
   output RGB2_Blue;
   output RGB2_Green;
@@ -49,7 +52,9 @@ module nexysa7fpga
   output [6:0]seg;
   input [15:0]sw;
   input clk;
-  output [3:0] JA;
+  output [1:0] JA_0;
+  input  [1:0] JA_1;
+  input  [3:0] JC;
   output uart_rtl_txd;
   input  uart_rtl_rxd;
 
@@ -73,23 +78,41 @@ module nexysa7fpga
   wire [15:0]sw;
   wire clk;
   wire [3:0] JA;
+  wire [3:0] JB;
   wire [31:0] control_reg;
-  wire [31:0] gpio_rtl_0;
+  wire [31:0] gpio_pwm;
+  wire [31:0] gpio_dir;
+  // motor specific variables
   wire SA; 
   wire SB; 
   wire EN; 
   wire DIR; 
-  // assign signals to the JA debug header
-  assign JA[0] = DIR;
-  assign JA[1] = EN;
-  assign SA = JA[2];
-  assign SB = JA[2]; //not used
+  //encoder specific variables
+  wire EcA;
+  wire EcB;
+  wire EcBTN;
+  wire EcSW;
+  // assign signals to the JA debug header and motor
+  assign JA_0[0] = DIR;
+  assign JA_0[1] = EN;
+  assign SA    = JA_1[0];
+  assign SB    = JA_1[1]; //not used
+  // assign signals to the JC header for encoder
+  assign EcA   = JC[4]; // E7
+  assign EcB   = JC[5]; // J3
+  assign EcBTN = JC[6]; // J4
+  assign EcSW  = JC[7]; // E6
   
-  // wrap the gpio output to the rgbPWM control register
-  assign control_reg = gpio_rtl_0;
+  // wrap the gpio output to the Enable PWM control register
+  assign control_reg = gpio_pwm;
+  // wrap the gpio output to the Direction control (will only be one bit width)
+  assign DIR = gpio_dir;
                   
   embsys embsys_i
-       (.RGB2_Blue_0(RGB2_Blue),
+       (.RGB1_Blue_0(RGB1_Blue),
+        .RGB1_Green_0(RGB1_Green),
+        .RGB1_Red_0(RGB1_Red),
+        .RGB2_Blue_0(RGB2_Blue),
         .RGB2_Green_0(RGB2_Green),
         .RGB2_Red_0(RGB2_Red),
         .an_0(an),
@@ -109,5 +132,11 @@ module nexysa7fpga
         .uart_rtl_0_rxd(uart_rtl_rxd),
         .uart_rtl_0_txd(uart_rtl_txd),
         .EN(EN), 
-        .SA(SA));
+        .SA(SA),
+        .encA_0(EcA),
+        .encB_0(EcB),
+        .encBTN_0(EcBTN),
+        .encSWT_0(EcSW),
+        .gpio_dir_tri_o(gpio_dir),
+        .gpio_pwm_tri_o(gpio_pwm));
 endmodule
