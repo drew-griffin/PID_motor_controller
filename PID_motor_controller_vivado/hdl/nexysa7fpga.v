@@ -54,7 +54,7 @@ module nexysa7fpga
   input clk;
   output [1:0] JA_0;
   input  [1:0] JA_1;
-  input  [3:0] JC;
+  input  [7:4] JC;
   output uart_rtl_txd;
   input  uart_rtl_rxd;
 
