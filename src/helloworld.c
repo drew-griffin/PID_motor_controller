@@ -64,7 +64,6 @@ int main()
     /* Be sure to have RedDC a test value, as this drives EN pin*/
     xil_printf("PID Motor Controller System Starting\r\n\n");
 
-//    u32 PWMCtrlReg;
     uint32_t sts = system_init();
     if (XST_SUCCESS != sts) {
         xil_printf("FATAL(main): System initialization failed\r\n");
@@ -74,6 +73,7 @@ int main()
     
 
     microblaze_enable_interrupts();
+    NX4IO_setLEDs(0x00000000); // clear LEDs, odd behavior where they turn on
     while(1)
     {
         read_user_IO(uIO);
