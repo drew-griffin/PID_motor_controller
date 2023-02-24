@@ -26,7 +26,8 @@
 
 /********************Local Variabales********************/
 static uint8_t kp, kd, ki;
-enum _const_select {kd_sel, ki_sel, kp_sel};
+static enum _const_select {kd_sel, ki_sel, kp_sel};
+static uint8_t const_sel;
 
 /**
  * read_user_IO() - reads user IO
@@ -67,13 +68,13 @@ void init_IO_struct(ptr_user_io_t uIO) {
     uIO->switch_state = 0x0000;
     uIO->has_changed = true;
     ki = kp = kd = 0;
+    const_sel = kp_sel;
 }
 
 void update_pid(ptr_user_io_t uIO) {
     static uint8_t prev_btn = 0xff;
     static uint16_t prev_sw = 0xffff;
     static uint8_t step_val = 1;
-    static uint8_t const_sel = kp_sel; // default to kp constant
 
     if(uIO->has_changed) {
         if(prev_sw != uIO->switch_state) {
@@ -184,4 +185,8 @@ void display(void) {
 
     NX4IO_SSEG_setDigit(SSEGLO, DIGIT1, kd/10);
     NX4IO_SSEG_setDigit(SSEGLO, DIGIT0, kd%10);
+
+    NX4IO_SSEG_setDecPt(SSEGHI, DIGIT6, (const_sel == kp_sel));
+    NX4IO_SSEG_setDecPt(SSEGLO, DIGIT3, (const_sel == ki_sel));
+    NX4IO_SSEG_setDecPt(SSEGLO, DIGIT0, (const_sel == kd_sel));
 }
