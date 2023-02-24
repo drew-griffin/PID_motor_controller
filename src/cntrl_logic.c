@@ -26,7 +26,7 @@
 
 /********************Local Variabales********************/
 static uint8_t kp, kd, ki;
-static enum _const_select {kd_sel, ki_sel, kp_sel};
+enum _const_select {kd_sel, ki_sel, kp_sel};
 static uint8_t const_sel;
 
 /**
