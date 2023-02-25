@@ -5,7 +5,7 @@
  * @copyright Portland State University, 2023
  * 
  * @brief
- * This is the source file for initilization of the system for the PID_Controller
+ * This is the source file for initialization of the system for the PID_Controller
  * software.
  * 
  * <pre>
@@ -48,7 +48,19 @@ int system_init(void) {
     init_platform();
 
     // init hardware peripherals
-    
+    // initialize the PMOD Encoder
+    status = PMODENC544_initialize(PMODENC_BA);
+    if (status != XST_SUCCESS){
+    	return XST_FAILURE;
+    }
+
+	// initialize the GPIO driver
+	status = XGpio_Initialize(&Gpio, GPIO_DEVICE_ID);
+	if (status != XST_SUCCESS)
+		return XST_FAILURE;
+	// sets channel 1, direction for all 32 bits is output hence the 0s
+	XGpio_SetDataDirection(&Gpio, 1, 0x00000000);
+
 	// initialize the Nexys4 driver
 	status = NX4IO_initialize(N4IO_BASEADDR);
 	if (status != XST_SUCCESS){

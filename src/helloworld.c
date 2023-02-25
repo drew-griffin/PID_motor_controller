@@ -69,11 +69,13 @@ int main()
         xil_printf("FATAL(main): System initialization failed\r\n");
         return 1;
     }
+
     init_IO_struct(uIO);
     
 
     microblaze_enable_interrupts();
     NX4IO_setLEDs(0x00000000); // clear LEDs, odd behavior where they turn on
+    PMODENC544_clearRotaryCount(); // set rotary count to 0
     while(1)
     {
         read_user_IO(uIO);
@@ -86,34 +88,3 @@ int main()
     return 0;
 }
 
-
-/**
- * buildPWMCtrlReg() - returns a PWM ControlReg value
- *
- * @brief combines the enable and PWM duty cycle bits to create
- * a value that can be loaded into the PWM Control register
- * This control register will write RGB_1 in this application.
- *
- * @param enable	PWM enable.  True to enable the PWM outputs
- * @param RedDc		Duty cycle for RED pwm.  Range is 0..1023
- * @param GreenDc	Duty cycle for GREEN pwm.  Range is 0..1023
- * @param Blue		Duty cycle for BLUE pwm.  Range is 0..1023
- *
- * @return			A PWM Control register value
- */
-/*
-u32 buildPWMCtrlReg(bool enable, u16 RedDC, u16 GreenDC, u16 BlueDC)
-{
-	u32 cntlreg;
-
-	// initialize the value depending on whether PWM is enabled
-	// enable is Control register[31]
-	cntlreg = (enable) ? 0x80000000 : 0x0000000;
-
-	// add the duty cycles
-	cntlreg |= ((BlueDC & 0x03FF) << 0) |
-			   ((GreenDC & 0x03FF) << 10) |
-			   ((RedDC & 0x03FF) << 20);
-	return cntlreg;
-}
-*/
