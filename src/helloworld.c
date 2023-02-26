@@ -58,10 +58,7 @@ static ptr_user_io_t uIO;
 
 int main()
 {
-    /* To do tie this to gpio_pwm signal in axi_gpio_0 block */
-    /* In HDL tie gpio_pwm to control_Reg_0 in instantiation */
-    /* This will testing sending output */
-    /* Be sure to have RedDC a test value, as this drives EN pin*/
+
     xil_printf("PID Motor Controller System Starting\r\n\n");
 
     uint32_t sts = system_init();

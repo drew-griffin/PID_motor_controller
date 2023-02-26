@@ -54,12 +54,10 @@ int system_init(void) {
     	return XST_FAILURE;
     }
 
-	// initialize the GPIO driver
-	status = XGpio_Initialize(&Gpio, GPIO_DEVICE_ID);
+	// initialize the PMOD HB3
+	status = HB3_initialize(HB3_BA);
 	if (status != XST_SUCCESS)
 		return XST_FAILURE;
-	// sets channel 1, direction for all 32 bits is output hence the 0s
-	XGpio_SetDataDirection(&Gpio, 1, 0x00000000);
 
 	// initialize the Nexys4 driver
 	status = NX4IO_initialize(N4IO_BASEADDR);

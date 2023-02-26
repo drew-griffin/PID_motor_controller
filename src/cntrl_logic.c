@@ -240,14 +240,14 @@ void update_pid(ptr_user_io_t uIO) {
     		}
     		xil_printf("Updated Rotary Count %d, setpoint: %d\r\n", count, setpoint);
             // write the value to the motor
-    		u32 PWMCntrlReg = buildPWMCtrlReg(pwmEnable, setpoint, 0, 0);
-            XGpio_DiscreteWrite(&Gpio, 1, PWMCntrlReg);
+    		HB3_setPWM(pwmEnable, setpoint);
         }
         if(prev_enc_BtnSw != uIO->enc_BtnSw_state){
         	prev_enc_BtnSw = uIO->enc_BtnSw_state;
     		if(prev_enc_BtnSw & 0x01){
     			PMODENC544_clearRotaryCount(); // set rotary count to 0
     			count = 0;
+    			pwmEnable = false;
     		}
     		if(prev_enc_BtnSw & 0x02)
     			xil_printf("switched\n\r");
@@ -275,34 +275,4 @@ void display(void) {
 	    NX4IO_SSEG_setDecPt(SSEGLO, DIGIT3, (const_sel == ki_sel));
 	    NX4IO_SSEG_setDecPt(SSEGLO, DIGIT0, (const_sel == kd_sel));
 	}
-}
-
-/**
- * buildPWMCtrlReg() - returns a PWM ControlReg value
- *
- * @brief combines the enable and PWM duty cycle bits to create
- * a value that can be loaded into the PWM Control register
- * This control register will write RGB_1 in this application.
- *
- * @param enable	PWM enable.  True to enable the PWM outputs
- * @param RedDc		Duty cycle for RED pwm.  Range is 0..1023
- * @param GreenDc	Duty cycle for GREEN pwm.  Range is 0..1023
- * @param Blue		Duty cycle for BLUE pwm.  Range is 0..1023
- *
- * @return			A PWM Control register value
- */
-
-u32 buildPWMCtrlReg(bool enable, u16 RedDC, u16 GreenDC, u16 BlueDC)
-{
-	u32 cntlreg;
-
-	// initialize the value depending on whether PWM is enabled
-	// enable is Control register[31]
-	cntlreg = (enable) ? 0x80000000 : 0x0000000;
-
-	// add the duty cycles
-	cntlreg |= ((BlueDC & 0x03FF) << 0) |
-			   ((GreenDC & 0x03FF) << 10) |
-			   ((RedDC & 0x03FF) << 20);
-	return cntlreg;
 }
