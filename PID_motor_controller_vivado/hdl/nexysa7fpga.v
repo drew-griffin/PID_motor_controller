@@ -103,40 +103,34 @@ module nexysa7fpga
   assign EcBTN = JC[6]; // J4
   assign EcSW  = JC[7]; // E6
   
-  // wrap the gpio output to the Enable PWM control register
-  assign control_reg = gpio_pwm;
-  // wrap the gpio output to the Direction control (will only be one bit width)
-  assign DIR = gpio_dir;
-                  
-  embsys embsys_i
-       (.RGB1_Blue_0(RGB1_Blue),
+   embsys embsys_i
+       (.DIR(DIR),
+        .EN(EN),
+        .RGB1_Blue_0(RGB1_Blue),
         .RGB1_Green_0(RGB1_Green),
         .RGB1_Red_0(RGB1_Red),
         .RGB2_Blue_0(RGB2_Blue),
         .RGB2_Green_0(RGB2_Green),
         .RGB2_Red_0(RGB2_Red),
+        .SA(SA),
         .an_0(an),
         .btnC_0(btnC),
         .btnD_0(btnD),
         .btnL_0(btnL),
         .btnR_0(btnR),
         .btnU_0(btnU),
-        .clkPWM_0(clkPWM),
         .clk_100MHz(clk),
-        .controlReg_0(control_reg),
         .dp_0(dp),
+        .encA_0(EcA),
+        .encBTN_0(EcBTN),
+        .encB_0(EcB),
+        .encSWT_0(EcSWT),
         .led_0(led),
         .resetn(btnCpuReset),
         .seg_0(seg),
         .sw_0(sw),
+        .tachB_0(SB),
         .uart_rtl_0_rxd(uart_rtl_rxd),
-        .uart_rtl_0_txd(uart_rtl_txd),
-        .EN(EN), 
-        .SA(SA),
-        .encA_0(EcA),
-        .encB_0(EcB),
-        .encBTN_0(EcBTN),
-        .encSWT_0(EcSW),
-        .gpio_dir_tri_o(gpio_dir),
-        .gpio_pwm_tri_o(gpio_pwm));
+        .uart_rtl_0_txd(uart_rtl_txd));
+     
 endmodule
