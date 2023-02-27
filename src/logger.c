@@ -18,7 +18,8 @@
 #include "logger.h"
 
 XUartLite UartLite;		/* Instance of the UartLite Device */
-uint8_t SendBuffer[BUFFER_SIZE];	/* Buffer for Transmitting Data */
+uint8_t ControlBuffer[CONTROL_BUFFER_SIZE] = {'D', 'B', ' '};
+uint8_t DataBuffer[DATA_BUFFER_SIZE];	/* Buffer for Transmitting Data */
 
 /**
  * @function send_data
@@ -32,30 +33,41 @@ void send_data()
     uint8_t   Kp = (uint8_t)(5 * 10), Ki = (uint8_t)(3.2 * 10), Kd = (uint8_t)(4.7 * 10);
     uint8_t   set_rpm = 55, read_rpm = 47;
 
-    /*
-    SendBuffer = {'D', 'B', ' ', 
-                    rpm, read_rpm, 
-                    (Kp >> 8), (Kp && 0xFF), ' ',
-                    (Ki >> 8), (Kp && 0xFF), ' ',
-                    (Kd >> 8), (Kd && 0xFF), '\n'};
-    */
-   /* To do - improve */
-    /*
-   SendBuffer[0] = 'D'; SendBuffer[1] = 'B';  SendBuffer[2] = ' '; 
-   SendBuffer[3] = rpm; SendBuffer[4] = ' ';  SendBuffer[5] = read_rpm;
-   SendBuffer[6] = ' '; SendBuffer[7] = Kp;   SendBuffer[8] = ' ';
-   SendBuffer[9] = Ki;  SendBuffer[10] = Kd;  SendBuffer[11] = '\n';
+    DataBuffer[0] =  set_rpm/10 % 10 + '0';
+    DataBuffer[1] =  set_rpm % 10 + '0';
+    DataBuffer[2] =  ' '; 
+    DataBuffer[3] =  read_rpm/10 % 10 + '0';
+    DataBuffer[4] =  read_rpm % 10 + '0';
+    DataBuffer[5] =  ' '; 
+    DataBuffer[6] =  Kp/10 % 10 + '0';
+    DataBuffer[7] =  Kp % 10 + '0';
+    DataBuffer[8] =  ' '; 
+    DataBuffer[9] =  Ki/10 % 10 + '0';
+    DataBuffer[10] = Ki % 10 + '0';
+    DataBuffer[11] = ' '; 
+    DataBuffer[12] = Kd/10 % 10 + '0';
+    DataBuffer[13] = Kd % 10 + '0';
+    DataBuffer[14] = '\n'; 
+   
 
 
     uint32_t numSent;
-    numSent = XUartLite_Send(&UartLite, SendBuffer, BUFFER_SIZE); 
-    if (numSent != BUFFER_SIZE)
+    numSent = XUartLite_Send(&UartLite, ControlBuffer, CONTROL_BUFFER_SIZE); 
+    if (numSent != CONTROL_BUFFER_SIZE)
     {
         return XST_FAILURE; 
     }
-	*/
+    
+    while (XUartLite_IsSending(&UartLite)){};
 
-    xil_printf("DB %d %d %d %d %d\n\r", set_rpm, read_rpm, Kp, Ki, Kd);
+    numSent = XUartLite_Send(&UartLite, DataBuffer, DATA_BUFFER_SIZE); 
+    if (numSent != DATA_BUFFER_SIZE)
+    {
+        return XST_FAILURE; 
+    }
+	
+
+    //xil_printf("DB %d %d %d %d %d\n\r", set_rpm, read_rpm, Kp, Ki, Kd);
 }
 
 /**
