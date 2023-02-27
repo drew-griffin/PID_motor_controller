@@ -56,8 +56,8 @@ int system_init(void) {
 
 	// initialize the PMOD HB3
 	status = HB3_initialize(HB3_BA);
-	if (status != XST_SUCCESS)
-		return XST_FAILURE;
+	//if (status != XST_SUCCESS)
+	//	return XST_FAILURE;
 
 	// initialize the Nexys4 driver
 	status = NX4IO_initialize(N4IO_BASEADDR);

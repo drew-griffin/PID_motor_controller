@@ -260,6 +260,9 @@ void display(void) {
 	if(display_mode){
 		NX4IO_SSEG_setSSEG_DATA(SSEGHI, 0x0058E30E);
 		NX4IO_SSEG_setSSEG_DATA(SSEGLO, 0x00144116);
+		uint32_t readPWM = PWM_Analyzer_GetDutyCycle_percent(PWM_BASEADDR);
+		uint32_t readHB3 = HB3_getTicks();
+		xil_printf("%d%% duty cycle; %d ticks per second\r\n", readPWM, readHB3);
 	}
 	else{
 	    NX4IO_SSEG_setDigit(SSEGHI, DIGIT7, kp/10);

@@ -36,6 +36,12 @@
 // Definitions for PMOD HB3
 #define HB3_BA 					XPAR_MYHB3IP_0_S00_AXI_BASEADDR
 
+// pwm testing
+#include "PWM_Analyzer.h"
+#define AXI_CLOCK_FREQ_HZ		XPAR_CPU_M_AXI_DP_FREQ_HZ
+// Definitions for PWM_Analyzer
+#define PWM_BASEADDR 			XPAR_PWM_ANALYZER_0_S00_AXI_BASEADDR
+
 /*********Control Structs****************************/
 typedef struct user_io {
     uint8_t button_state;
