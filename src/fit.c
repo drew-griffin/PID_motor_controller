@@ -20,12 +20,10 @@
 #include <stdint.h>
 #include "fit.h"
 
-#define HEART_BEAT      0x00008000
-
 /**
  * FIT_Handler() - Fixed Interval interrupt handler
  * 
- * Blinks LED[15] every 0.25 seconds, as proof to the systems operation.
+ * Blinks dp7 every 0.25 seconds, as proof to the systems operation.
  * Will stop if watchdog timer fails
  * 
  * @note    Registered in sys_init.c

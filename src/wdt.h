@@ -26,4 +26,10 @@
 /********** AXI Peripheral Instances **********/
 XWdtTb WDTTB_Inst;
 
+/**
+ * WDTHandler() - turns on LED15 and restarts WDT
+ * unless kill switch is flipped
+ * 
+ * @note: tied to INTC in sys_init.c
+*/
 void WDTHandler(void);

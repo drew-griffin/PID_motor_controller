@@ -70,10 +70,21 @@ void read_user_IO(ptr_user_io_t uIO);
 */
 void init_IO_struct(ptr_user_io_t uIO);
 
+/**
+ * display() - displays set mode or run mode for user
+*/
 void display(void);
 
+/**
+ * update_pid() - function loop that updates info from
+ * incoming user interfaces of the switches, push buttons,
+ * and encoder
+ * 
+ * @param       pointer to a user IO struct
+*/
 void update_pid(ptr_user_io_t uIO);
 
+// TODO: remove to a helper function once PID is implemented
 u32 buildPWMCtrlReg(bool enable, u16 RedDC, u16 GreenDC, u16 BlueDC);
 
 #endif
