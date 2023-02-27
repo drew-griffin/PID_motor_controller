@@ -24,12 +24,23 @@
 /*************Local File Defines*********************/
 #define WDT_LED         0x00008000
 
+/**
+ * WDTHandler() - turns on LED15 and restarts WDT
+ * unless kill switch is flipped
+ * 
+ * @brief       Starts up with LED15 lit and kicks the
+ *              dog every time through unless there is
+ *              a kill switched that is flipped.
+ * 
+ * @note:       tied to INTC in sys_init.c
+*/
 void WDTHandler(void) {
     static bool isInitialized = false;
 
     if(!isInitialized) {
         isInitialized = true;
-        NX4IO_setLEDs(WDT_LED);
+        uint16_t prv_led = NX4IO_getLEDS_DATA();
+        NX4IO_setLEDs(WDT_LED | prv_led);
     }
 
     if(!wdt_crash) {
