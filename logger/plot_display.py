@@ -26,7 +26,7 @@ uartlite.baudrate = 9600
 uartlite.timeout  = 10
 
 #csv file 
-file = open('PID_data', 'w')
+file = open('PID_data.csv', 'w')
 writer = csv.writer(file)
 header = ['time', 'set rpm', 'read rpm', 'Kp', 'Ki', 'Kd']
 writer.writerow(header)
