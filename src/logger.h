@@ -25,7 +25,8 @@
 #include "xil_printf.h"
 
 #define UARTLITE_DEVICE_ID	XPAR_UARTLITE_0_DEVICE_ID
-#define BUFFER_SIZE 12
+#define DATA_BUFFER_SIZE 15
+#define CONTROL_BUFFER_SIZE 3
 
 /* send data */
 void send_data(); 
