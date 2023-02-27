@@ -53,3 +53,15 @@ void HB3_setPWM(bool enable, u16 DC)
 		MYHB3IP_mWriteReg(baseAddress, HB3_PWM_OFFSET, cntlreg);
 	}
 }
+
+uint32_t HB3_getTicks(void)
+{
+    uint32_t count;
+    if (isInitialized) {
+        count = MYHB3IP_mReadReg(baseAddress, HB3_TICKS_OFFSET);
+    }
+    else{
+        count = 0xDEADBEEF;
+    }
+    return count;
+}

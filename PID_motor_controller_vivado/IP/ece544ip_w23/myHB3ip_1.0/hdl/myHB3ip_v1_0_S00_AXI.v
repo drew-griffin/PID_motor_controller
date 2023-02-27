@@ -119,7 +119,7 @@
 	reg [C_S_AXI_DATA_WIDTH-1:0]	 reg_data_out;
 	integer	 byte_index;
 	reg	 aw_en;
-
+	wire [31:0] ticker_out;
 	// I/O Connections assignments
 
 	assign S_AXI_AWREADY	= axi_awready;
@@ -377,7 +377,7 @@
 	      // Address decoding for reading registers
 	      case ( axi_araddr[ADDR_LSB+OPT_MEM_ADDR_BITS:ADDR_LSB] )
 	        2'h0   : reg_data_out <= slv_reg0;
-	        2'h1   : reg_data_out <= slv_reg1;
+	        2'h1   : reg_data_out <= ticker_out;
 	        2'h2   : reg_data_out <= slv_reg2;
 	        2'h3   : reg_data_out <= slv_reg3;
 	        default : reg_data_out <= 0;
@@ -404,6 +404,7 @@
 	end    
 
 	// Add user logic here
+	//wire [31:0] ticker_output;
    // synchronize tachA to clock
    reg tachA_delay, tachA_clean, tachB_delay, tachB_clean;
    always @ (posedge S_AXI_ACLK) begin
@@ -423,6 +424,16 @@
         .direction(direction),
         .enable(enable)
     );
+    ticks ticker(
+        .clk(S_AXI_ACLK),
+        .reset(S_AXI_ARESETN),
+        .tachA(tachA_clean),
+        .tick_out(ticker_out)
+    );
+    
+   // always @* begin
+ //       slv_reg1 = ticker_output;
+  //  end
 	// User logic ends
 
 	endmodule

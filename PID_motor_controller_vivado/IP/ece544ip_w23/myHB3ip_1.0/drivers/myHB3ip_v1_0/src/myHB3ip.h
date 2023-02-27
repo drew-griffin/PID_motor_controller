@@ -10,7 +10,7 @@
 #include "xil_io.h"
 
 #define HB3_PWM_OFFSET 0
-#define MYHB3IP_S00_AXI_SLV_REG1_OFFSET 4
+#define HB3_TICKS_OFFSET 4
 #define MYHB3IP_S00_AXI_SLV_REG2_OFFSET 8
 #define MYHB3IP_S00_AXI_SLV_REG3_OFFSET 12
 
@@ -82,5 +82,6 @@ XStatus MYHB3IP_Reg_SelfTest(void * baseaddr_p);
 // API function prototypes
 XStatus HB3_initialize(uint32_t baseaddr_p);
 void HB3_setPWM(bool enable, u16 DC);
+uint32_t HB3_getTicks(void);
 
 #endif // MYHB3IP_H

@@ -98,8 +98,8 @@ module nexysa7fpga
   assign SA    = JA_1[0];
   assign SB    = JA_1[1]; //not used
   // assign signals to the JC header for encoder
-  assign EcA   = JC[4]; // E7
-  assign EcB   = JC[5]; // J3
+  assign EcB   = JC[4]; // E7 //swapped A and B for clockwise increment
+  assign EcA   = JC[5]; // J3
   assign EcBTN = JC[6]; // J4
   assign EcSW  = JC[7]; // E6
   
