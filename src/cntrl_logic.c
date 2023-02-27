@@ -103,10 +103,9 @@ void update_pid(ptr_user_io_t uIO) {
     static uint8_t prev_enc_BtnSw = 0xff;
 
     if(uIO->has_changed) {
-        if(prev_sw != uIO->switch_state && set_mode) {
+        if(prev_sw != uIO->switch_state) {
             prev_sw = uIO->switch_state;
-            xil_printf("PID value chosen for steps was ");//, ((prev_sw >> 5) & CONSTANT_STEP_MASK));
-            // select step size Switches[6:5]
+            xil_printf("PID value chosen for steps was ");
             switch((prev_sw >> 5) & CONSTANT_STEP_MASK) {
                 case 0:
                     step_val = 1;
@@ -223,7 +222,7 @@ void update_pid(ptr_user_io_t uIO) {
                 }
             }
         }
-        if(prev_count != uIO->rotary_count && set_mode) { // has the knob turned?
+        if(prev_count != uIO->rotary_count) { // has the knob turned?
             if((prev_count + 1) == uIO->rotary_count){
             	count += step_val_enc;
         	}
