@@ -29,14 +29,15 @@
 #define SPEED_MAX	1023		// Duty Cycle of 100% is max motor speed
 #define SPEED_STEP	6			// gives 100 steps between min and max speed ~0.587% Duty Cycle
 
-/********************Local Variables********************/
+/********************Local File Variables********************/
 static uint8_t kp, kd, ki;
 enum _const_select {kd_sel, ki_sel, kp_sel};
 static uint8_t const_sel;
 static uint16_t setpoint;
 static bool pwmEnable = true;					// true to enable PWM output
 static uint8_t count = 0;
-static bool display_mode = true;
+static bool set_mode = true;
+static uint8_t PID_control_sel = 0x00;
 /**
  * read_user_IO() - reads user IO
  * 
@@ -64,7 +65,7 @@ void read_user_IO(ptr_user_io_t uIO) {
     }
 
     if(uIO->rotary_count != count) {
-    	uIO->rotary_count = count;
+        uIO->rotary_count = count;
         uIO->has_changed = true;
     }
 
@@ -102,7 +103,7 @@ void update_pid(ptr_user_io_t uIO) {
     static uint8_t prev_enc_BtnSw = 0xff;
 
     if(uIO->has_changed) {
-        if(prev_sw != uIO->switch_state) {
+        if(prev_sw != uIO->switch_state && set_mode) {
             prev_sw = uIO->switch_state;
             xil_printf("PID value chosen for steps was ");//, ((prev_sw >> 5) & CONSTANT_STEP_MASK));
             // select step size Switches[6:5]
@@ -124,17 +125,9 @@ void update_pid(ptr_user_io_t uIO) {
                     break;
             }
             xil_printf("%d\r\n", step_val);
-            xil_printf("value chosen to change was %d\r\n", (prev_sw & CONSTANT_SELECT_MASK));
-            uint8_t select_val = (prev_sw & CONSTANT_SELECT_MASK);
-            if(select_val == 1) {
-                const_sel = kd_sel;
-            }
-            else if(select_val < 4 && select_val >= 2) {
-                const_sel = ki_sel;
-            }
-            else {
-                const_sel = kp_sel;
-            }
+            xil_printf("values chosen to use for PID was %d\r\n", (prev_sw & CONSTANT_SELECT_MASK));
+            PID_control_sel = (prev_sw & CONSTANT_SELECT_MASK);
+
             xil_printf("Setpoint value chosen for steps was ");//, ((prev_sw >> 5) & CONSTANT_STEP_MASK));
             // select step size Switches[6:5]
             switch((prev_sw >> 3) & CONSTANT_STEP_MASK) {
@@ -168,45 +161,60 @@ void update_pid(ptr_user_io_t uIO) {
                         //iterate through the buttons and modify global PID
                         // controller values
                         case 0: // btnR
+                            if(set_mode) {
+                                if(const_sel == kd_sel) {
+                                    const_sel = ki_sel;
+                                }
+                                else if(const_sel == ki_sel) {
+                                    const_sel = kp_sel;
+                                }
+                                else {
+                                    const_sel = kd_sel;
+                                }
+                            }
                             break;
 
                         case 1: // btnL
                             break;
 
                         case 2: // btnD
-                            switch(const_sel) {
-                                case kd_sel:
-                                    kd -= step_val;
-                                    break;
-                                case ki_sel:
-                                    ki -= step_val;
-                                    break;
-                                case kp_sel:
-                                    kp -= step_val;
-                                    break;
-                                default:
-                                    break;
+                            if(set_mode) {
+                                switch(const_sel) {
+                                    case kd_sel:
+                                        kd -= step_val;
+                                        break;
+                                    case ki_sel:
+                                        ki -= step_val;
+                                        break;
+                                    case kp_sel:
+                                        kp -= step_val;
+                                        break;
+                                    default:
+                                        break;
+                                }
                             }
                             break;
 
                         case 3: // btnU
-                            switch(const_sel) {
-                                case kd_sel:
-                                    kd += step_val;
-                                    break;
-                                case ki_sel:
-                                    ki += step_val;
-                                    break;
-                                case kp_sel:
-                                    kp += step_val;
-                                    break;
-                                default:
-                                    break;
-                            }  
+                            if(set_mode) {
+                                switch(const_sel) {
+                                    case kd_sel:
+                                        kd += step_val;
+                                        break;
+                                    case ki_sel:
+                                        ki += step_val;
+                                        break;
+                                    case kp_sel:
+                                        kp += step_val;
+                                        break;
+                                    default:
+                                        break;
+                                }
+                            } 
                             break;
 
                         case 4: // btnC
-                            display_mode = !display_mode;
+                            set_mode = !set_mode;
                             break;
 
                         default: //shouldn't get here
@@ -215,7 +223,7 @@ void update_pid(ptr_user_io_t uIO) {
                 }
             }
         }
-        if(prev_count != uIO->rotary_count) { // has the knob turned?
+        if(prev_count != uIO->rotary_count && set_mode) { // has the knob turned?
             if((prev_count + 1) == uIO->rotary_count){
             	count += step_val_enc;
         	}
@@ -248,6 +256,8 @@ void update_pid(ptr_user_io_t uIO) {
     		if(prev_enc_BtnSw & 0x01){
     			PMODENC544_clearRotaryCount(); // set rotary count to 0
     			count = 0;
+                kp = 1;
+                kd = ki = 0;
     		}
     		if(prev_enc_BtnSw & 0x02)
     			xil_printf("switched\n\r");
@@ -257,7 +267,7 @@ void update_pid(ptr_user_io_t uIO) {
 }
 
 void display(void) {
-	if(display_mode){
+	if(!set_mode){
 		NX4IO_SSEG_setSSEG_DATA(SSEGHI, 0x0058E30E);
 		NX4IO_SSEG_setSSEG_DATA(SSEGLO, 0x00144116);
 	}
@@ -271,9 +281,53 @@ void display(void) {
 	    NX4IO_SSEG_setDigit(SSEGLO, DIGIT1, kd/10);
 	    NX4IO_SSEG_setDigit(SSEGLO, DIGIT0, kd%10);
 
-	    NX4IO_SSEG_setDecPt(SSEGHI, DIGIT6, (const_sel == kp_sel));
-	    NX4IO_SSEG_setDecPt(SSEGLO, DIGIT3, (const_sel == ki_sel));
-	    NX4IO_SSEG_setDecPt(SSEGLO, DIGIT0, (const_sel == kd_sel));
+        switch(PID_control_sel) {
+            case 0: // open loop
+                NX4IO_SSEG_setDecPt(SSEGHI, DIGIT6, false);
+                NX4IO_SSEG_setDecPt(SSEGLO, DIGIT3, false);
+                NX4IO_SSEG_setDecPt(SSEGLO, DIGIT0, false);
+                break;
+            case 1: // derivative control only
+                NX4IO_SSEG_setDecPt(SSEGHI, DIGIT6, false);
+                NX4IO_SSEG_setDecPt(SSEGLO, DIGIT3, false);
+                NX4IO_SSEG_setDecPt(SSEGLO, DIGIT0, true);
+                break;
+            case 2: // integral control only
+                NX4IO_SSEG_setDecPt(SSEGHI, DIGIT6, false);
+                NX4IO_SSEG_setDecPt(SSEGLO, DIGIT3, true);
+                NX4IO_SSEG_setDecPt(SSEGLO, DIGIT0, false);
+                break;
+            case 3: // ID control
+                NX4IO_SSEG_setDecPt(SSEGHI, DIGIT6, false);
+                NX4IO_SSEG_setDecPt(SSEGLO, DIGIT3, true);
+                NX4IO_SSEG_setDecPt(SSEGLO, DIGIT0, true);
+                break;
+            case 4: // proportional control only
+                NX4IO_SSEG_setDecPt(SSEGHI, DIGIT6, true);
+                NX4IO_SSEG_setDecPt(SSEGLO, DIGIT3, false);
+                NX4IO_SSEG_setDecPt(SSEGLO, DIGIT0, false);
+                break;
+            case 5: // PD control
+                NX4IO_SSEG_setDecPt(SSEGHI, DIGIT6, true);
+                NX4IO_SSEG_setDecPt(SSEGLO, DIGIT3, false);
+                NX4IO_SSEG_setDecPt(SSEGLO, DIGIT0, true);
+                break;
+            case 6: // PI control
+                NX4IO_SSEG_setDecPt(SSEGHI, DIGIT6, true);
+                NX4IO_SSEG_setDecPt(SSEGLO, DIGIT3, true);
+                NX4IO_SSEG_setDecPt(SSEGLO, DIGIT0, false);
+                break;
+            case 7: // PID control
+                NX4IO_SSEG_setDecPt(SSEGHI, DIGIT6, true);
+                NX4IO_SSEG_setDecPt(SSEGLO, DIGIT3, true);
+                NX4IO_SSEG_setDecPt(SSEGLO, DIGIT0, true);
+                break;
+            default: // shouldn't get here
+                NX4IO_SSEG_setDecPt(SSEGHI, DIGIT6, false);
+                NX4IO_SSEG_setDecPt(SSEGLO, DIGIT3, false);
+                NX4IO_SSEG_setDecPt(SSEGLO, DIGIT0, false);
+                break;
+        }
 	}
 }
 
