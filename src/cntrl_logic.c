@@ -92,6 +92,7 @@ void init_IO_struct(ptr_user_io_t uIO) {
     uIO->has_changed = true;
     ki = kp = kd = 0;
     const_sel = kp_sel;
+    wdt_crash = false;
 }
 
 void update_pid(ptr_user_io_t uIO) {
@@ -105,6 +106,8 @@ void update_pid(ptr_user_io_t uIO) {
     if(uIO->has_changed) {
         if(prev_sw != uIO->switch_state) {
             prev_sw = uIO->switch_state;
+            uint16_t leds = NX4IO_getLEDS_DATA() & 0x8000;
+            NX4IO_setLEDs(leds | (prev_sw & 0x007F));
             xil_printf("PID value chosen for steps was ");
             switch((prev_sw >> 5) & CONSTANT_STEP_MASK) {
                 case 0:
@@ -258,8 +261,10 @@ void update_pid(ptr_user_io_t uIO) {
                 kp = 1;
                 kd = ki = 0;
     		}
-    		if(prev_enc_BtnSw & 0x02)
+    		if(prev_enc_BtnSw & 0x02) {
     			xil_printf("switched\n\r");
+                wdt_crash = true;
+            }
         }
         uIO->has_changed = false;
     }

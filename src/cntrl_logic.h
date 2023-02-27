@@ -49,6 +49,9 @@ typedef struct user_io {
     bool has_changed;
 } user_io_t, *ptr_user_io_t;
 
+/***********Shared Global Variables******************/
+bool wdt_crash; // used for the wdt
+
 /**
  * read_user_IO() - reads and returns user IO data
  * 

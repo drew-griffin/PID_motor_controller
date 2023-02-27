@@ -51,6 +51,7 @@
 #include "microblaze_sleep.h"
 #include "sys_init.h"
 #include "cntrl_logic.h"
+#include "wdt.h"
 
 
 /*****************PID Control Instances*****************/
@@ -70,10 +71,8 @@ int main()
         return 1;
     }
 
-    init_IO_struct(uIO);
-    
-
     microblaze_enable_interrupts();
+    init_IO_struct(uIO);
     NX4IO_setLEDs(0x00000000); // clear LEDs, odd behavior where they turn on
     PMODENC544_clearRotaryCount(); // set rotary count to 0
     while(1)
@@ -81,6 +80,13 @@ int main()
         read_user_IO(uIO);
         update_pid(uIO);
         display();
+        if(XWdtTb_IsWdtExpired(&WDTTB_Inst)) {
+            while(1) {
+                NX4IO_setLEDs(0x0000FFFF);
+                NX410_SSEG_setAllDigits(SSEGHI, CC_BLANK, CC_B, CC_LCY, CC_E, DP_NONE);
+	            NX410_SSEG_setAllDigits(SSEGLO, CC_B, CC_LCY, CC_E, CC_BLANK, DP_NONE);
+            }
+        }
     }
     
     microblaze_disable_interrupts();
