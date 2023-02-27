@@ -75,7 +75,7 @@ always @(posedge div_out) begin
 		count <= 32'd0;
 	end
 	else begin
-		if (enable) begin
+		if (enablePWM) begin
 			count = (count < MAX_COUNT) ? count + 1'b1 : 32'd0;
 		end
         else begin
@@ -90,7 +90,7 @@ always @(posedge div_out)begin
 		DC_latch <= 10'd0;
 	end
 	else begin
-		if (enable) begin
+		if (enablePWM) begin
 			if (count >= MAX_COUNT) begin
 					DC_latch <= DC;
             end
