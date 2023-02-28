@@ -42,6 +42,7 @@ static bool pwmEnable = true;					// true to enable PWM output
 static uint8_t count = 0;
 static bool set_mode = true;
 static bool send_uart_data = false; 
+static bool curr_data_sent = false; 
 static uint8_t PID_control_sel = 0x00;
 /**
  * read_user_IO() - reads user IO
@@ -393,11 +394,16 @@ void display(void) {
  */
 void send_uartlite_data()
 {
-    if (send_uart_data == true && second_counter == 3)
+    if (send_uart_data == true && second_counter == 3 && curr_data_sent == false)
     {
         send_data(50, 50, kp, ki, kd); 
+        curr_data_sent = true; 
     }
-    else 
+    else if (second_counter != 3)
+    {
+        curr_data_sent = false; 
+    } 
+    else
     {
         return; 
     }

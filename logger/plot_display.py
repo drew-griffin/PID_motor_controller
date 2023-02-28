@@ -61,9 +61,9 @@ def updateData(i):
 
     Set.append(int(parsed_data[1]))
     Read.append(int(parsed_data[2]))
-    Kp.append((int(parsed_data[3])/10))
-    Ki.append((int(parsed_data[4])/10))
-    Kd.append((int(parsed_data[5])/10))
+    Kp.append((int(parsed_data[3])))
+    Ki.append((int(parsed_data[4])))
+    Kd.append((int(parsed_data[5])))
 
     ax.clear()
     ax.plot(time, Set, label="setpoint")

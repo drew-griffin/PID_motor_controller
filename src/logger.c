@@ -61,6 +61,12 @@ void send_data(uint8_t set_rpm, uint8_t read_rpm, uint8_t Kp, uint8_t Ki, uint8_
     {
         return XST_FAILURE; 
     }
+
+     //block until second message is sent 
+    while (XUartLite_IsSending(&UartLite)){};
+
+    //clear the FIFOs 
+    XUartLite_ResetFifos(&UartLite); 
 	/* Could use this instead */
     //xil_printf("DB %d %d %d %d %d\n\r", set_rpm, read_rpm, Kp, Ki, Kd);
 }
