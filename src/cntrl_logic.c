@@ -292,8 +292,7 @@ void update_pid(ptr_user_io_t uIO) {
     		}
     		xil_printf("Updated Rotary Count %d, setpoint: %d\r\n", count, setpoint);
             // write the value to the motor
-    		u32 PWMCntrlReg = buildPWMCtrlReg(pwmEnable, setpoint, 0, 0);
-            XGpio_DiscreteWrite(&Gpio, 1, PWMCntrlReg);
+    		HB3_setPWM(pwmEnable, setpoint);
         }
         if(prev_enc_BtnSw != uIO->enc_BtnSw_state){
         	prev_enc_BtnSw = uIO->enc_BtnSw_state;
@@ -308,7 +307,7 @@ void update_pid(ptr_user_io_t uIO) {
                 wdt_crash = true;
             }
         }
-        // change state back to unchaged, want to be in this loop
+        // change state back to unchanged, want to be in this loop
         // as little as possible
         uIO->has_changed = false;
     }
@@ -324,8 +323,19 @@ void update_pid(ptr_user_io_t uIO) {
 */
 void display(void) {
 	if(!set_mode){ // run mode -- display set point and motor rpm
-		NX4IO_SSEG_setSSEG_DATA(SSEGHI, 0x0058E30E);
-		NX4IO_SSEG_setSSEG_DATA(SSEGLO, 0x00144116);
+		//uint32_t readPWM = PWM_Analyzer_GetDutyCycle_percent(PWM_BASEADDR);
+		//PWM Analyzer HW is in design and was used for testing, but can be removed in final submission
+		uint32_t HB3_RPM = HB3_getRPM();
+		uint32_t HB3_ticks = HB3_getTicks();
+// currently displays RPM on left side, and ticks/s on right
+	    NX4IO_SSEG_setDigit(SSEGHI, DIGIT7, CC_BLANK);
+	    NX4IO_SSEG_setDigit(SSEGHI, DIGIT6, CC_BLANK);
+	    NX4IO_SSEG_setDigit(SSEGHI, DIGIT5, HB3_RPM/10);
+	    NX4IO_SSEG_setDigit(SSEGHI, DIGIT4, HB3_RPM%10);
+	    NX4IO_SSEG_setDigit(SSEGLO, DIGIT3, CC_BLANK);
+	    NX4IO_SSEG_setDigit(SSEGLO, DIGIT2, HB3_ticks/100);
+	    NX4IO_SSEG_setDigit(SSEGLO, DIGIT1, (HB3_ticks/10) %10);
+	    NX4IO_SSEG_setDigit(SSEGLO, DIGIT0, HB3_ticks%10);
 	}
 	else{ // set mode -- display K-constants and selected constants
 	    NX4IO_SSEG_setDigit(SSEGHI, DIGIT7, kp/10);
@@ -408,34 +418,3 @@ void send_uartlite_data()
         return; 
     }
 } 
-
-/**
- * buildPWMCtrlReg() - returns a PWM ControlReg value
- *
- * @brief combines the enable and PWM duty cycle bits to create
- * a value that can be loaded into the PWM Control register
- * This control register will write RGB_1 in this application.
- *
- * @param enable	PWM enable.  True to enable the PWM outputs
- * @param RedDc		Duty cycle for RED pwm.  Range is 0..1023
- * @param GreenDc	Duty cycle for GREEN pwm.  Range is 0..1023
- * @param Blue		Duty cycle for BLUE pwm.  Range is 0..1023
- *
- * @return			A PWM Control register value
- */
-
-u32 buildPWMCtrlReg(bool enable, u16 RedDC, u16 GreenDC, u16 BlueDC)
-{
-	u32 cntlreg;
-
-	// initialize the value depending on whether PWM is enabled
-	// enable is Control register[31]
-	cntlreg = (enable) ? 0x80000000 : 0x0000000;
-
-	// add the duty cycles
-	cntlreg |= ((BlueDC & 0x03FF) << 0) |
-			   ((GreenDC & 0x03FF) << 10) |
-			   ((RedDC & 0x03FF) << 20);
-	return cntlreg;
-}
-

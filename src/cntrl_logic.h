@@ -24,7 +24,7 @@
 #include "nexys4io.h"
 #include "xparameters.h"
 #include "PmodENC544.h"
-#include "xgpio.h"
+#include "myHB3IP.h"
 
 /*********Peripheral Device Constants****************************/
 // Definitions for peripheral NEXYS4IO
@@ -33,12 +33,15 @@
 // Definitions for PMOD Encoder
 #define 	PMODENC_ID 	XPAR_PMODENC544_0_DEVICE_ID
 #define 	PMODENC_BA	XPAR_PMODENC544_0_S00_AXI_BASEADDR
-// Definitions for GPIO output
-#define GPIO_REG_BASE_ADDRESS	XPAR_AXI_GPIO_0_BASEADDR
-#define GPIO_DEVICE_ID			XPAR_AXI_GPIO_0_DEVICE_ID
+// Definitions for PMOD HB3
+#define HB3_BA 					XPAR_MYHB3IP_0_S00_AXI_BASEADDR
 
-/********** AXI Peripheral Instances **********/
-XGpio 	Gpio;
+// PWM Analyzer HW is currently in design and was used in testing, but can be removed for final submission
+#include "PWM_Analyzer.h"
+#define AXI_CLOCK_FREQ_HZ		XPAR_CPU_M_AXI_DP_FREQ_HZ
+// Definitions for PWM_Analyzer
+#define PWM_BASEADDR 			XPAR_PWM_ANALYZER_0_S00_AXI_BASEADDR
+
 
 /*********Control Structs****************************/
 typedef struct user_io {
@@ -91,8 +94,5 @@ void update_pid(ptr_user_io_t uIO);
  */
 void send_uartlite_data(); 
 
-
-// TODO: remove to a helper function once PID is implemented
-u32 buildPWMCtrlReg(bool enable, u16 RedDC, u16 GreenDC, u16 BlueDC);
 
 #endif
