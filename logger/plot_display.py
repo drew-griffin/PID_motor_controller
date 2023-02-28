@@ -49,14 +49,13 @@ def updateData(i):
     time.append(i)
     #check for control signal
     if (parsed_data[0] != b'DB'):
-        file.close()
         return 
     if (i == 1000):
         file.close()
         exit() 
     if (i > 0): 
-        row = [i, int(parsed_data[1]),int(parsed_data[2]), (int(parsed_data[3])/10), 
-        (int(parsed_data[4])/10), (int(parsed_data[5])/10)]
+        row = [i, int(parsed_data[1]),int(parsed_data[2]), (int(parsed_data[3])), 
+        (int(parsed_data[4])), (int(parsed_data[5]))]
         writer.writerow(row)
 
     Set.append(int(parsed_data[1]))
