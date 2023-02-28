@@ -133,8 +133,9 @@ module nexysa7fpga
         .uart_rtl_0_txd(uart_rtl_txd),
         .EN(EN), 
         .SA(SA),
-        .encA_0(EcA),
-        .encB_0(EcB),
+        // switch these for directional readings
+        .encA_0(EcB),
+        .encB_0(EcA),
         .encBTN_0(EcBTN),
         .encSWT_0(EcSW),
         .gpio_dir_tri_o(gpio_dir),
