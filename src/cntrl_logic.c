@@ -19,6 +19,7 @@
 
 #include "cntrl_logic.h"
 #include "logger.h"
+#include "fit.h" // need access to the counter for sends
 
 /********************Control Constants********************/
 #define CONSTANT_STEP_MASK              0x00003
@@ -42,7 +43,6 @@ static uint8_t count = 0;
 static bool set_mode = true;
 static bool send_uart_data = false; 
 static uint8_t PID_control_sel = 0x00;
-extern second_counter;
 /**
  * read_user_IO() - reads user IO
  * 

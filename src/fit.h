@@ -29,6 +29,8 @@
 #define FIT_CLOCK_FREQ_HZ		4
 #define FIT_INTR_NUM			XPAR_MICROBLAZE_0_AXI_INTC_FIT_TIMER_0_INTERRUPT_INTR
 
+uint8_t second_counter;
+
 /**
  * FIT_Handler() - blinks heartbeat LED every 0.25 seconds
  * 

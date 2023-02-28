@@ -29,7 +29,6 @@
  * @note    Registered in sys_init.c
  * 
 */
-uint8_t second_counter = 0; 
 
 void FIT_Handler(void) {
     static bool isInitialized = false; // starts up led heartbeat
@@ -38,6 +37,7 @@ void FIT_Handler(void) {
     if (!isInitialized) {
         dpOn = true;
         isInitialized = true;
+        second_counter = 0; 
     }
 
     dpOn = (dpOn) ? false : true;
