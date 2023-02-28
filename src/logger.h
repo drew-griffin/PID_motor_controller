@@ -29,7 +29,7 @@
 #define CONTROL_BUFFER_SIZE 3
 
 /* send data */
-void send_data(); 
+void send_data(uint8_t set_rpm, uint8_t read_rpm, uint8_t Kp, uint8_t Ki, uint8_t Kd);
 
 /* configure the uart_light*/
 void uartlite_init(); 

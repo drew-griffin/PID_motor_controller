@@ -18,6 +18,7 @@
 ************************************************************/
 
 #include "cntrl_logic.h"
+#include "logger.h"
 
 /********************Control Constants********************/
 #define CONSTANT_STEP_MASK              0x00003
@@ -39,7 +40,9 @@ static uint16_t setpoint;
 static bool pwmEnable = true;					// true to enable PWM output
 static uint8_t count = 0;
 static bool set_mode = true;
+static bool send_uart_data = false; 
 static uint8_t PID_control_sel = 0x00;
+extern second_counter;
 /**
  * read_user_IO() - reads user IO
  * 
@@ -202,7 +205,8 @@ void update_pid(ptr_user_io_t uIO) {
                             }
                             break;
 
-                        case 1: // btnL - left blank for now
+                        case 1: // btnL - turn off or on sending plot data
+                                send_uart_data = !send_uart_data;
                             break;
 
                         case 2: // btnD - decrease k-constant value
@@ -383,6 +387,23 @@ void display(void) {
 }
 
 /**
+ * send_uartlite_data
+ * @brief sends uartlite data every second
+ * if BtnL has been changed to true 
+ */
+void send_uartlite_data()
+{
+    if (send_uart_data == true && second_counter == 3)
+    {
+        send_data(50, 50, kp, ki, kd); 
+    }
+    else 
+    {
+        return; 
+    }
+} 
+
+/**
  * buildPWMCtrlReg() - returns a PWM ControlReg value
  *
  * @brief combines the enable and PWM duty cycle bits to create
@@ -411,3 +432,4 @@ u32 buildPWMCtrlReg(bool enable, u16 RedDC, u16 GreenDC, u16 BlueDC)
 			   ((RedDC & 0x03FF) << 20);
 	return cntlreg;
 }
+

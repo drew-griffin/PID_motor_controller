@@ -26,13 +26,8 @@ uint8_t DataBuffer[DATA_BUFFER_SIZE];	/* Buffer for Transmitting Data */
  * @brief sends data to console using
  * polled uartlite methodology 
  */
-void send_data()
+void send_data(uint8_t set_rpm, uint8_t read_rpm, uint8_t Kp, uint8_t Ki, uint8_t Kd)
 {
-
-    /* TEST CONSTANT VALUE TO BE CHANGED*/
-    uint8_t   Kp = (uint8_t)(5 * 10), Ki = (uint8_t)(3.2 * 10), Kd = (uint8_t)(4.7 * 10);
-    uint8_t   set_rpm = 55, read_rpm = 47;
-
     DataBuffer[0] =  set_rpm/10 % 10 + '0';
     DataBuffer[1] =  set_rpm % 10 + '0';
     DataBuffer[2] =  ' '; 
@@ -58,6 +53,7 @@ void send_data()
         return XST_FAILURE; 
     }
     
+    //block until first message is sent 
     while (XUartLite_IsSending(&UartLite)){};
 
     numSent = XUartLite_Send(&UartLite, DataBuffer, DATA_BUFFER_SIZE); 
@@ -65,8 +61,7 @@ void send_data()
     {
         return XST_FAILURE; 
     }
-	
-
+	/* Could use this instead */
     //xil_printf("DB %d %d %d %d %d\n\r", set_rpm, read_rpm, Kp, Ki, Kd);
 }
 

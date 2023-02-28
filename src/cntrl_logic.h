@@ -84,6 +84,14 @@ void display(void);
 */
 void update_pid(ptr_user_io_t uIO);
 
+/**
+ * send_uartlite_data
+ * @brief sends uartlite data every second
+ * if BtnL has been changed to true 
+ */
+void send_uartlite_data(); 
+
+
 // TODO: remove to a helper function once PID is implemented
 u32 buildPWMCtrlReg(bool enable, u16 RedDC, u16 GreenDC, u16 BlueDC);
 

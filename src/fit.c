@@ -29,6 +29,8 @@
  * @note    Registered in sys_init.c
  * 
 */
+uint8_t second_counter = 0; 
+
 void FIT_Handler(void) {
     static bool isInitialized = false; // starts up led heartbeat
     static bool dpOn;
@@ -40,4 +42,8 @@ void FIT_Handler(void) {
 
     dpOn = (dpOn) ? false : true;
     NX4IO_SSEG_setDecPt (SSEGHI, DIGIT7, dpOn);
+
+    second_counter++; 
+    if (second_counter == 4)
+        second_counter = 0;
 }

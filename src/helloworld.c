@@ -58,6 +58,7 @@
 /*****************PID Control Instances*****************/
 static ptr_user_io_t uIO;
 
+
 int main()
 {
     /* To do tie this to gpio_pwm signal in axi_gpio_0 block */
@@ -71,8 +72,7 @@ int main()
         xil_printf("FATAL(main): System initialization failed\r\n");
         return 1;
     }
-    /* setup the uartlite */
-    uartlite_init(); 
+  
 
     microblaze_enable_interrupts();
     init_IO_struct(uIO);
@@ -83,7 +83,7 @@ int main()
         read_user_IO(uIO);
         update_pid(uIO);
         display();
-        send_data();
+        send_uartlite_data();
         if(XWdtTb_IsWdtExpired(&WDTTB_Inst)) {
             while(1) {
                 NX4IO_setLEDs(0x0000FFFF);
@@ -91,7 +91,7 @@ int main()
 	            NX410_SSEG_setAllDigits(SSEGLO, CC_B, CC_LCY, CC_E, CC_BLANK, DP_NONE);
             }
         } 
-        usleep(1000 * 1000);
+        //usleep(1000 * 1000); 
     }
     
     microblaze_disable_interrupts();
