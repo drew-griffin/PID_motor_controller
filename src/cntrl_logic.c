@@ -28,8 +28,10 @@
 #define NBTNS                           5
 #define SPEED_OFF 	                    1			// Duty Cycle of 1% to stop motor
 //#define SPEED_MIN 	                389			// Duty Cycle of 38% is minimum value to get motor to move
-#define SPEED_MIN 	                    460			// Duty Cycle of 45% is minimum motor speed chosen
-#define SPEED_MAX	                    614		    // Duty Cycle of 60% is max motor speed
+#define SPEED_MIN 	                    454			// Duty Cycle of 45% is minimum motor speed chosen
+//454 so that first rotation of knob sets the motor to 45% 460/1023
+#define SPEED_MAX	                    616		    // Duty Cycle of 60% is max motor speed
+//616 gives 27 rotary counts range
 #define RESOLUTION                      1023        // 10 bit resolution (absolute max duty cycle is 100% at 1023)
 #define SPEED_STEP	                    6			// gives 100 steps between min and max speed ~0.587% Duty Cycle
 #define ROT_BTN                         0x01        // mask for rotary push button
@@ -134,15 +136,14 @@ void update_pid(ptr_user_io_t uIO) {
 
     // if user interface has changed process the change
     if(uIO->has_changed) {
-        // if switches have changed proccess the new switch state
+        // if switches have changed process the new switch state
         if(prev_sw != uIO->switch_state) {
             prev_sw = uIO->switch_state;
-            // updates the LEDs without interfereing with the WDT
+            // updates the LEDs without interfering with the WDT
             // LED status
             uint16_t leds = NX4IO_getLEDS_DATA() & 0x8000;
             NX4IO_setLEDs(leds | (prev_sw & 0x007F));
-            xil_printf("PID value chosen for steps was ");
-            // switch over the new step mask for k-constants Switches[2:0]
+            // select step size Switches[6:5] for k-constants
             switch((prev_sw >> 5) & CONSTANT_STEP_MASK) {
                 case 0:
                     step_val = 1;
@@ -160,13 +161,7 @@ void update_pid(ptr_user_io_t uIO) {
                     step_val = 1;
                     break;
             }
-            xil_printf("%d\r\n", step_val);
-            xil_printf("values chosen to use for PID was %d\r\n", (prev_sw & CONSTANT_SELECT_MASK));
-            // get new state for PID control loop and display Switches[4:3]
-            PID_control_sel = (prev_sw & CONSTANT_SELECT_MASK);
-
-            xil_printf("Setpoint value chosen for steps was ");//, ((prev_sw >> 5) & CONSTANT_STEP_MASK));
-            // select step size Switches[6:5] for set point
+            // select step size Switches[4:3] for set point
             switch((prev_sw >> 3) & CONSTANT_STEP_MASK) {
                 case 0:
                     step_val_enc = 1;
@@ -184,8 +179,40 @@ void update_pid(ptr_user_io_t uIO) {
                     step_val_enc = 1;
                     break;
             }
-            xil_printf("%d\r\n", step_val_enc);
+            xil_printf("PID step val: %2d   Setpoint step val: %2d   ", step_val, step_val_enc);
+            // select PID control loop formula
+            PID_control_sel = (prev_sw & CONSTANT_SELECT_MASK);
+            switch(PID_control_sel) {
+                case 0:
+                	xil_printf("Control None\r\n");
+                    break;
+                case 1:
+                	xil_printf("Control D\r\n");
+                    break;
+                case 2:
+                	xil_printf("Control I\r\n");
+                    break;
+                case 3:
+                	xil_printf("Control ID\r\n");
+                    break;
+                case 4:
+                	xil_printf("Control P\r\n");
+                    break;
+                case 5:
+                	xil_printf("Control PD\r\n");
+                    break;
+                case 6:
+                	xil_printf("Control PI\r\n");
+                    break;
+                case 7:
+                	xil_printf("Control PID\r\n");
+                    break;
+                default: // shouldn't get here
+                    xil_printf("how did I get here?\r\n");
+                    break;
+            }
         }
+        // if buttons have changed process the button input
         if(prev_btn != uIO->button_state) {
             prev_btn = uIO->button_state;
             uint8_t btnMask = 0x01;
@@ -273,7 +300,8 @@ void update_pid(ptr_user_io_t uIO) {
                 }
             }
         }
-        if(prev_count != uIO->rotary_count) { // has the knob turned?
+        // process knob rotation
+        if(prev_count != uIO->rotary_count) {
             if((prev_count + 1) == uIO->rotary_count){
             	count += step_val_enc;
         	}
@@ -283,35 +311,35 @@ void update_pid(ptr_user_io_t uIO) {
             prev_count = uIO->rotary_count;
     		if(count == 0){
     			setpoint = SPEED_OFF;
-    			//pwmEnable = false; // not sure if needed
+    			pwmEnable = false;
     		}
-    		else if((count > 0) && (count <= 100)){
+    		else if((count > 0) && (count <= 27)){//limit count to MAX_SPEED value
     			setpoint = SPEED_MIN + (count * SPEED_STEP);
     			pwmEnable = true;
     		}
-    		else{
-    			PMODENC544_clearRotaryCount(); // set rotary count to 0
+    		else{ // if negative count or count rolled over max, reset to 0
+    			PMODENC544_clearRotaryCount();
     			setpoint = SPEED_OFF;
-    			pwmEnable = false; // specifically stated in project description
+    			pwmEnable = false;
     			count = 0;
-                set_rpm = 0; 
-               
+                set_rpm = 0;
     		}
     		xil_printf("Updated Rotary Count %d, setpoint: %d\r\n", count, setpoint);
-            // write the value to the motor
-    		HB3_setPWM(pwmEnable, setpoint);
         }
+        // process encoder button or switch
         if(prev_enc_BtnSw != uIO->enc_BtnSw_state){
         	prev_enc_BtnSw = uIO->enc_BtnSw_state;
     		if(prev_enc_BtnSw & ROT_BTN){
     			PMODENC544_clearRotaryCount(); // set rotary count to 0
+    			setpoint = SPEED_OFF;
+    			pwmEnable = false; // specifically stated in project description
     			count = 0;
                 kp = 1;
                 kd = ki = 0;
                 set_rpm = 0;  
     		}
     		if(prev_enc_BtnSw & ROT_SW) {
-    			xil_printf("switched\n\r");
+    			xil_printf("forced WDT crash\n\r");
                 wdt_crash = true;
             }
         }
@@ -326,19 +354,22 @@ void update_pid(ptr_user_io_t uIO) {
  * control_pid
  * @brief main pid control loop 
  * updates state based on file globals 
+ * sets PWM of motor based on
  */
 void control_pid()
 {
     static uint8_t preverror = 0; 
     static uint8_t i = 0; 
 
-    if(set_mode || setpoint < SPEED_MIN || setpoint > SPEED_MAX)
+    if(setpoint == SPEED_OFF)
     {
-        return; 
+    	set_rpm = 0;
+    	HB3_setPWM(pwmEnable, setpoint); //change the motor speed by set PWM
+        return;
     }
     else
     {
-        usleep(100); 
+        usleep(100);
         uint8_t i_control = 10; 
         uint8_t duty_cycle = setpoint_to_duty_cycle(setpoint); 
         set_rpm = duty_cycle_to_rpm(duty_cycle); 
@@ -358,18 +389,14 @@ void control_pid()
 
         uint8_t output_rpm = set_rpm + GP + GI + GD; 
         uint16_t output_setpoint = setpoint_from_rpm(output_rpm); 
-        if (output_setpoint < SPEED_MIN || output_setpoint > SPEED_MAX)
-        {   
-            xil_printf("Error: PID control loop producing out of range values\n\r");
-            xil_printf("error = %d\n\r", error);  
-            xil_printf("GP = %d, GI = %d, GD = %d\n\r", GP, GI, GD); 
-            xil_printf("set rpm = %d, read rpm = %d\n\r", set_rpm, read_rpm); 
-            xil_printf("setpoint = %d\n\r", setpoint);
-            xil_printf("output setpoint = %d\nr", output_setpoint);
-           return; 
+        // clamp max output to 100% duty cycle
+        if(output_setpoint > RESOLUTION)
+        {
+        	output_setpoint = RESOLUTION;
+        	xil_printf("Error: PID control loop producing too high a value\n\r");
         }
         HB3_setPWM(pwmEnable, output_setpoint); //change the motor speed by set PWM
-    }   
+    }
 }
 
 /**
@@ -381,22 +408,23 @@ void control_pid()
  *              set mode.
 */
 void display(void) {
-	if(!set_mode){ // run mode -- display set point and motor rpm
-		//uint32_t readPWM = PWM_Analyzer_GetDutyCycle_percent(PWM_BASEADDR);
-		//PWM Analyzer HW is in design and was used for testing, but can be removed in final submission
+	if(!set_mode){ // run mode
 		uint32_t HB3_RPM = HB3_getRPM();
-		uint32_t HB3_ticks = HB3_getTicks();
-// currently displays RPM on left side, and ticks/s on right
+		// turn off decimal points
+        NX4IO_SSEG_setDecPt(SSEGHI, DIGIT6, false);
+        NX4IO_SSEG_setDecPt(SSEGLO, DIGIT3, false);
+        NX4IO_SSEG_setDecPt(SSEGLO, DIGIT0, false);
+        // display read rpm on left and set rpm on right
 	    NX4IO_SSEG_setDigit(SSEGHI, DIGIT7, CC_BLANK);
 	    NX4IO_SSEG_setDigit(SSEGHI, DIGIT6, CC_BLANK);
 	    NX4IO_SSEG_setDigit(SSEGHI, DIGIT5, HB3_RPM/10);
 	    NX4IO_SSEG_setDigit(SSEGHI, DIGIT4, HB3_RPM%10);
 	    NX4IO_SSEG_setDigit(SSEGLO, DIGIT3, CC_BLANK);
-	    NX4IO_SSEG_setDigit(SSEGLO, DIGIT2, HB3_ticks/100);
-	    NX4IO_SSEG_setDigit(SSEGLO, DIGIT1, (HB3_ticks/10) %10);
-	    NX4IO_SSEG_setDigit(SSEGLO, DIGIT0, HB3_ticks%10);
+	    NX4IO_SSEG_setDigit(SSEGLO, DIGIT2, CC_BLANK);
+	    NX4IO_SSEG_setDigit(SSEGLO, DIGIT1, set_rpm/10);
+	    NX4IO_SSEG_setDigit(SSEGLO, DIGIT0, set_rpm%10);
 	}
-	else{ // set mode -- display K-constants and selected constants
+	else{ // set mode -- display K-constants
 	    NX4IO_SSEG_setDigit(SSEGHI, DIGIT7, kp/10);
 	    NX4IO_SSEG_setDigit(SSEGHI, DIGIT6, kp%10);
 	    NX4IO_SSEG_setDigit(SSEGHI, DIGIT5, CC_SPACE);
@@ -405,53 +433,21 @@ void display(void) {
 	    NX4IO_SSEG_setDigit(SSEGLO, DIGIT2, CC_BLANK);
 	    NX4IO_SSEG_setDigit(SSEGLO, DIGIT1, kd/10);
 	    NX4IO_SSEG_setDigit(SSEGLO, DIGIT0, kd%10);
-
-        switch(PID_control_sel) {
-            case 0: // open loop
-                NX4IO_SSEG_setDecPt(SSEGHI, DIGIT6, false);
-                NX4IO_SSEG_setDecPt(SSEGLO, DIGIT3, false);
-                NX4IO_SSEG_setDecPt(SSEGLO, DIGIT0, false);
-                break;
-            case 1: // derivative control only
-                NX4IO_SSEG_setDecPt(SSEGHI, DIGIT6, false);
-                NX4IO_SSEG_setDecPt(SSEGLO, DIGIT3, false);
-                NX4IO_SSEG_setDecPt(SSEGLO, DIGIT0, true);
-                break;
-            case 2: // integral control only
-                NX4IO_SSEG_setDecPt(SSEGHI, DIGIT6, false);
-                NX4IO_SSEG_setDecPt(SSEGLO, DIGIT3, true);
-                NX4IO_SSEG_setDecPt(SSEGLO, DIGIT0, false);
-                break;
-            case 3: // ID control
-                NX4IO_SSEG_setDecPt(SSEGHI, DIGIT6, false);
-                NX4IO_SSEG_setDecPt(SSEGLO, DIGIT3, true);
-                NX4IO_SSEG_setDecPt(SSEGLO, DIGIT0, true);
-                break;
-            case 4: // proportional control only
-                NX4IO_SSEG_setDecPt(SSEGHI, DIGIT6, true);
-                NX4IO_SSEG_setDecPt(SSEGLO, DIGIT3, false);
-                NX4IO_SSEG_setDecPt(SSEGLO, DIGIT0, false);
-                break;
-            case 5: // PD control
-                NX4IO_SSEG_setDecPt(SSEGHI, DIGIT6, true);
-                NX4IO_SSEG_setDecPt(SSEGLO, DIGIT3, false);
-                NX4IO_SSEG_setDecPt(SSEGLO, DIGIT0, true);
-                break;
-            case 6: // PI control
-                NX4IO_SSEG_setDecPt(SSEGHI, DIGIT6, true);
-                NX4IO_SSEG_setDecPt(SSEGLO, DIGIT3, true);
-                NX4IO_SSEG_setDecPt(SSEGLO, DIGIT0, false);
-                break;
-            case 7: // PID control
-                NX4IO_SSEG_setDecPt(SSEGHI, DIGIT6, true);
-                NX4IO_SSEG_setDecPt(SSEGLO, DIGIT3, true);
-                NX4IO_SSEG_setDecPt(SSEGLO, DIGIT0, true);
-                break;
-            default: // shouldn't get here
-                NX4IO_SSEG_setDecPt(SSEGHI, DIGIT6, false);
-                NX4IO_SSEG_setDecPt(SSEGLO, DIGIT3, false);
-                NX4IO_SSEG_setDecPt(SSEGLO, DIGIT0, false);
-                break;
+	    // display decimal point on selected value to change
+	    if(const_sel == ki_sel) {
+            NX4IO_SSEG_setDecPt(SSEGHI, DIGIT6, false);
+            NX4IO_SSEG_setDecPt(SSEGLO, DIGIT3, true);
+            NX4IO_SSEG_setDecPt(SSEGLO, DIGIT0, false);
+        }
+        else if(const_sel == kp_sel) {
+            NX4IO_SSEG_setDecPt(SSEGHI, DIGIT6, true);
+            NX4IO_SSEG_setDecPt(SSEGLO, DIGIT3, false);
+            NX4IO_SSEG_setDecPt(SSEGLO, DIGIT0, false);
+        }
+        else if(const_sel == kd_sel){
+            NX4IO_SSEG_setDecPt(SSEGHI, DIGIT6, false);
+            NX4IO_SSEG_setDecPt(SSEGLO, DIGIT3, false);
+            NX4IO_SSEG_setDecPt(SSEGLO, DIGIT0, true);
         }
 	}
 }
@@ -466,7 +462,7 @@ void send_uartlite_data()
     {
         return; 
     }
-    if (send_uart_data == true && second_counter == 3 && curr_data_sent == false)
+    if (send_uart_data == true && second_counter == 1 && curr_data_sent == false)
     {   
         uint8_t send_kp = (PID_control_sel & 0x4) ? kp : 0; 
         uint8_t send_ki = (PID_control_sel & 0x2) ? ki : 0; 
@@ -475,7 +471,7 @@ void send_uartlite_data()
         send_data(set_rpm, send_read_rpm, send_kp, send_ki, send_kd); 
         curr_data_sent = true; 
     }
-    else if (second_counter != 3)
+    else if (second_counter != 1)
     {
         curr_data_sent = false; 
     } 

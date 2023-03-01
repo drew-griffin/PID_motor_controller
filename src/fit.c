@@ -23,7 +23,7 @@
 /**
  * FIT_Handler() - Fixed Interval interrupt handler
  * 
- * Blinks dp7 every 0.25 seconds, as proof to the systems operation.
+ * Blinks dp7 every 0.5 seconds, as proof to the systems operation.
  * Will stop if watchdog timer fails
  * 
  * @note    Registered in sys_init.c
@@ -44,6 +44,6 @@ void FIT_Handler(void) {
     NX4IO_SSEG_setDecPt (SSEGHI, DIGIT7, dpOn);
 
     second_counter++; 
-    if (second_counter == 4)
+    if (second_counter == 2)//4)
         second_counter = 0;
 }
