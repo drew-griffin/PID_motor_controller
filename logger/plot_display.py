@@ -39,7 +39,7 @@ Set = []
 Read = []
 Error = []
 
-data_display = plt.figure()
+data_display = plt.figure(figsize=(10,5))
 ax = data_display.add_subplot(1,1,1)
 
 def updateData(i):
@@ -51,33 +51,44 @@ def updateData(i):
     if (i == 1000):
         file.close()
         exit() 
+
+    curr_set = int(parsed_data[1]); 
+    curr_read = int(parsed_data[2]); 
+    curr_error = int(parsed_data[1]) - int(parsed_data[2])
+    curr_Kp = int(parsed_data[3]); 
+    curr_Ki = int(parsed_data[4]); 
+    curr_Kd = int(parsed_data[5]); 
+
     if (i > 0): 
-        row = [i, int(parsed_data[1]),int(parsed_data[2]), 
-               int(parsed_data[1]) - int(parsed_data[2]), (int(parsed_data[3])), 
-                (int(parsed_data[4])), (int(parsed_data[5]))]
+        row = [i, curr_set,curr_read, 
+               curr_error, curr_Kp, 
+                curr_Ki, curr_Kd]
         writer.writerow(row)
+  
 
     time.append(i)
-    Set.append(int(parsed_data[1]))
-    Read.append(int(parsed_data[2]))
-    Error.append(int(parsed_data[1]) - int(parsed_data[2]))
-    Kp.append((int(parsed_data[3])))
-    Ki.append((int(parsed_data[4])))
-    Kd.append((int(parsed_data[5])))
+    Set.append(curr_set)
+    Read.append(curr_read)
+    Error.append(curr_error)
+    Kp.append(curr_Kp)
+    Ki.append(curr_Ki)
+    Kd.append(curr_Kd)
 
     ax.clear()
-    ax.plot(time, Set, label="set rpm")
-    ax.plot(time, Read, label="read rpm")
-    ax.plot(time, Error, label="error")
-    ax.plot(time, Kp, label="Kp")
-    ax.plot(time, Ki, label="Ki")
-    ax.plot(time, Kd, label="Kd")
+    ax.plot(time, Set, label=f'set rpm = {curr_set}')
+    ax.plot(time, Read, label=f'read rpm = {curr_read}')
+    ax.plot(time, Error, label=f'error = {curr_error}')
+    ax.plot(time, Kp, label=f'Kp = {curr_Kp}')
+    ax.plot(time, Ki, label=f'Ki = {curr_Ki}')
+    ax.plot(time, Kd, label=f'Kd = {curr_Kd}')
     
     plt.xlim([0, max(100,i)])
     plt.ylim([0,100])
     plt.title("Paramaters over Time")
     plt.xlabel("Time in Seconds")
     plt.ylabel("Paramaters")
+    plt.locator_params(axis='x', nbins=20)
+    plt.locator_params(axis='y', nbins=20)
     plt.legend()
   
 

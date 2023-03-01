@@ -65,6 +65,7 @@ int main()
     {
         read_user_IO(uIO);
         update_pid(uIO);
+        control_pid(); 
         display();
         send_uartlite_data();
         if(XWdtTb_IsWdtExpired(&WDTTB_Inst)) {
@@ -72,9 +73,10 @@ int main()
                 NX4IO_setLEDs(0x0000FFFF);
                 NX410_SSEG_setAllDigits(SSEGHI, CC_BLANK, CC_B, CC_LCY, CC_E, DP_NONE);
 	            NX410_SSEG_setAllDigits(SSEGLO, CC_B, CC_LCY, CC_E, CC_BLANK, DP_NONE);
+                HB3_setPWM(true, 1); //turn off motor
             }
         } 
-        //usleep(1000 * 1000); 
+        
     }
     
     microblaze_disable_interrupts();
