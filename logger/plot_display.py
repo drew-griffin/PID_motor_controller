@@ -27,10 +27,7 @@ uartlite.timeout  = 10
 
 #csv file 
 filename = 'PID_data.csv'
-file = open(filename, 'w')
-writer = csv.writer(file)
-header = ['time', 'set rpm', 'read rpm', 'error', 'Kp', 'Ki', 'Kd']
-writer.writerow(header)
+
 
 
 #global lists 
@@ -69,7 +66,7 @@ def updateData(i):
     Kd.append((int(parsed_data[5])))
 
     ax.clear()
-    ax.plot(time, Set, label="set")
+    ax.plot(time, Set, label="set rpm")
     ax.plot(time, Read, label="read rpm")
     ax.plot(time, Error, label="error")
     ax.plot(time, Kp, label="Kp")
@@ -85,7 +82,7 @@ def updateData(i):
   
 
 
-def parseArgs(argv):
+def parseArgs(argv, filename):
     status = False 
     for i in range(1, len(sys.argv)):
         if (sys.argv[i] == '-port'):
@@ -93,11 +90,11 @@ def parseArgs(argv):
             status = True
         if (sys.argv[i] == '-outfile'): 
             filename = sys.argv[i+1]
-    return status
+    return status, filename
 
 
 if __name__ == "__main__":
-    status = parseArgs(sys.argv)
+    [status, filename] = parseArgs(sys.argv, filename)
     if (status != True):
         print("error with port or outfile")
         print("please supply a valid port")
@@ -105,5 +102,9 @@ if __name__ == "__main__":
         print("please specify filename")
         exit()
     uartlite.open()
+    file = open(filename, 'w')
+    writer = csv.writer(file)
+    header = ['time', 'set rpm', 'read rpm', 'error', 'Kp', 'Ki', 'Kd']
+    writer.writerow(header)
     graph = animation.FuncAnimation(data_display, updateData, interval=200, save_count=1000)
     plt.show()

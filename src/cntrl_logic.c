@@ -19,6 +19,7 @@
 
 #include "cntrl_logic.h"
 #include "logger.h"
+#include "microblaze_sleep.h"
 #include "fit.h" // need access to the counter for sends
 
 /********************Control Constants********************/
@@ -27,11 +28,13 @@
 #define NBTNS                           5
 #define SPEED_OFF 	                    1			// Duty Cycle of 1% to stop motor
 //#define SPEED_MIN 	                389			// Duty Cycle of 38% is minimum value to get motor to move
-#define SPEED_MIN 	                    423			// Duty Cycle of 41% is minimum motor speed chosen
-#define SPEED_MAX	                    1023		// Duty Cycle of 100% is max motor speed
+#define SPEED_MIN 	                    460			// Duty Cycle of 45% is minimum motor speed chosen
+#define SPEED_MAX	                    614		    // Duty Cycle of 60% is max motor speed
+#define RESOLUTION                      1023        // 10 bit resolution (absolute max duty cycle is 100% at 1023)
 #define SPEED_STEP	                    6			// gives 100 steps between min and max speed ~0.587% Duty Cycle
 #define ROT_BTN                         0x01        // mask for rotary push button
 #define ROT_SW                          0x02        // mask for rotary switch
+#define MIN_RPM                         38
 
 /********************Local File Variables********************/
 static uint8_t kp, kd, ki;
@@ -44,6 +47,8 @@ static bool set_mode = true;
 static bool send_uart_data = false; 
 static bool curr_data_sent = false; 
 static uint8_t PID_control_sel = 0x00;
+static uint8_t set_rpm; 
+static uint8_t read_rpm; 
 /**
  * read_user_IO() - reads user IO
  * 
@@ -289,6 +294,8 @@ void update_pid(ptr_user_io_t uIO) {
     			setpoint = SPEED_OFF;
     			pwmEnable = false; // specifically stated in project description
     			count = 0;
+                set_rpm = 0; 
+               
     		}
     		xil_printf("Updated Rotary Count %d, setpoint: %d\r\n", count, setpoint);
             // write the value to the motor
@@ -301,6 +308,7 @@ void update_pid(ptr_user_io_t uIO) {
     			count = 0;
                 kp = 1;
                 kd = ki = 0;
+                set_rpm = 0;  
     		}
     		if(prev_enc_BtnSw & ROT_SW) {
     			xil_printf("switched\n\r");
@@ -311,6 +319,57 @@ void update_pid(ptr_user_io_t uIO) {
         // as little as possible
         uIO->has_changed = false;
     }
+}
+
+
+/**
+ * control_pid
+ * @brief main pid control loop 
+ * updates state based on file globals 
+ */
+void control_pid()
+{
+    static uint8_t preverror = 0; 
+    static uint8_t i = 0; 
+
+    if(set_mode || setpoint < SPEED_MIN || setpoint > SPEED_MAX)
+    {
+        return; 
+    }
+    else
+    {
+        usleep(100); 
+        uint8_t i_control = 10; 
+        uint8_t duty_cycle = setpoint_to_duty_cycle(setpoint); 
+        set_rpm = duty_cycle_to_rpm(duty_cycle); 
+        read_rpm = HB3_getRPM(); 
+        int8_t error = set_rpm - read_rpm; 
+        int8_t d = error - preverror; 
+        preverror = error; 
+        i = (error < set_rpm/i_control) ? i + error : 0; 
+
+       
+        int8_t GP = (PID_control_sel && 0x4) ? kp * error : 0;  //proportional control 
+        GP = ((GP > 0) && (GP < 70)) ? GP : 0; 
+        int8_t GI = (PID_control_sel && 0x2) ? (ki/i_control) * i  : 0;     //integral control
+        GI = ((GI > 0) && (GI < 70)) ? GP : 0; 
+        int8_t GD = (PID_control_sel && 0x1) ? kd * d : 0;      //derivative control
+        GD = ((GD > 0) && (GD < 70)) ? GD : 0; 
+
+        uint8_t output_rpm = set_rpm + GP + GI + GD; 
+        uint16_t output_setpoint = setpoint_from_rpm(output_rpm); 
+        if (output_setpoint < SPEED_MIN || output_setpoint > SPEED_MAX)
+        {   
+            xil_printf("Error: PID control loop producing out of range values\n\r");
+            xil_printf("error = %d\n\r", error);  
+            xil_printf("GP = %d, GI = %d, GD = %d\n\r", GP, GI, GD); 
+            xil_printf("set rpm = %d, read rpm = %d\n\r", set_rpm, read_rpm); 
+            xil_printf("setpoint = %d\n\r", setpoint);
+            xil_printf("output setpoint = %d\nr", output_setpoint);
+           return; 
+        }
+        HB3_setPWM(pwmEnable, output_setpoint); //change the motor speed by set PWM
+    }   
 }
 
 /**
@@ -403,10 +462,17 @@ void display(void) {
  * if BtnL has been changed to true 
  */
 void send_uartlite_data()
-{
-    if (send_uart_data == true && second_counter == 3 && curr_data_sent == false)
+{   if (set_mode)
     {
-        send_data(50, 50, kp, ki, kd); 
+        return; 
+    }
+    if (send_uart_data == true && second_counter == 3 && curr_data_sent == false)
+    {   
+        uint8_t send_kp = (PID_control_sel & 0x4) ? kp : 0; 
+        uint8_t send_ki = (PID_control_sel & 0x2) ? ki : 0; 
+        uint8_t send_kd = (PID_control_sel & 0x1) ? kd : 0; 
+        uint8_t send_read_rpm = (set_rpm == 0) ? 0 : read_rpm;
+        send_data(set_rpm, send_read_rpm, send_kp, send_ki, send_kd); 
         curr_data_sent = true; 
     }
     else if (second_counter != 3)
@@ -418,3 +484,42 @@ void send_uartlite_data()
         return; 
     }
 } 
+
+/**
+ * setpoint_to_duty_cycle
+ * @brief Setpoint in 10bit range to duty cycle 
+ * 
+ * @param setpoint 
+ * @return uint8_t 
+ */
+uint8_t setpoint_to_duty_cycle(uint16_t setpoint)
+{
+    float duty = (((float)setpoint / RESOLUTION) * 100);
+    uint8_t duty_cycle = (uint8_t)(duty); 
+    return duty_cycle; 
+}
+
+/**
+ * duty_cycle_to_rpm
+ * @brief duty cycle to rpm 
+ * 
+ * @param duty_cycle 
+ * @return uint8_t 
+ */
+uint8_t duty_cycle_to_rpm(uint8_t duty_cycle)
+{
+    return duty_cycle - 3; //from characterization between duty cycle and rpm
+}
+
+/**
+ * @brief convert from error rpm to setpoint 
+ * @param rpm  
+ * @return uint16_t setpoint 
+ */
+uint16_t setpoint_from_rpm(uint8_t rpm)
+{
+    uint8_t duty_cycle = rpm + 3; 
+    uint16_t setpoint = (uint16_t)((float)(duty_cycle) / 100 * RESOLUTION); 
+
+    return setpoint; 
+}

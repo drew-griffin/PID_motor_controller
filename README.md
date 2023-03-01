@@ -25,7 +25,3 @@ vivado -source rebuild.tcl
     - xdc/               - constraints 
     - motor_hardware/    - vivado project (not checked in)
     - IP/                - custom IP 
-- PID_motor_controller_vitis (TBD)
-    - PID_motor_controller_vitis_app
-    - PID_motor_controller_vitis_app_system
-    - PID_motor_controller_vitis_platform 

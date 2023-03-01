@@ -94,5 +94,37 @@ void update_pid(ptr_user_io_t uIO);
  */
 void send_uartlite_data(); 
 
+/**
+ * setpoint_to_duty_cycle
+ * @brief Setpoint in 10bit range to duty cycle 
+ * 
+ * @param setpoint 
+ * @return uint8_t 
+ */
+uint8_t setpoint_to_duty_cycle(uint16_t setpoint); 
+
+/**
+ * duty_cycle_to_rpm
+ * @brief duty cycle to rpm 
+ * 
+ * @param duty_cycle 
+ * @return uint8_t 
+ */
+uint8_t duty_cycle_to_rpm(uint8_t duty_cycle); 
+
+/**
+ * @brief convert from error rpm to setpoint 
+ * @param rpm  
+ * @return uint16_t setpoint 
+ */
+uint16_t setpoint_from_rpm(uint8_t rpm); 
+
+/**
+ * control_pid
+ * @brief main pid control loop 
+ * updates state based on file globals 
+ */
+void control_pid(); 
+
 
 #endif
