@@ -46,4 +46,11 @@ void WDTHandler(void) {
     if(!wdt_crash) {
         XWdtTb_RestartWdt(&WDTTB_Inst);
     }
+
+    if(XWdtTb_IsWdtExpired(&WDTTB_Inst)){
+            NX4IO_setLEDs(0x0000FFFF);
+            NX410_SSEG_setAllDigits(SSEGHI, CC_BLANK, CC_B, CC_LCY, CC_E, DP_NONE);
+            NX410_SSEG_setAllDigits(SSEGLO, CC_B, CC_LCY, CC_E, CC_BLANK, DP_NONE);
+            HB3_setPWM(true, 1); //turn off motor
+    }
 }

@@ -458,10 +458,7 @@ void display(void) {
  * if BtnL has been changed to true 
  */
 void send_uartlite_data()
-{   if (set_mode)
-    {
-        return; 
-    }
+{
     if (send_uart_data == true && second_counter == 1 && curr_data_sent == false)
     {   
         uint8_t send_kp = (PID_control_sel & 0x4) ? kp : 0; 
@@ -475,10 +472,6 @@ void send_uartlite_data()
     {
         curr_data_sent = false; 
     } 
-    else
-    {
-        return; 
-    }
 } 
 
 /**
