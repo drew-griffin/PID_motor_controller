@@ -47,6 +47,7 @@ def updateData(i):
     parsed_data = data.split(b' ')
     #check for control signal
     if (parsed_data[0] != b'DB'):
+        print(data)
         return 
     if (i == 1000):
         file.close()
@@ -83,7 +84,7 @@ def updateData(i):
     ax.plot(time, Kd, label=f'Kd = {curr_Kd}')
     
     plt.xlim([0, max(100,i)])
-    plt.ylim([0,100])
+    plt.ylim([-10,100])
     plt.title("Paramaters over Time")
     plt.xlabel("Time in Seconds")
     plt.ylabel("Paramaters")
