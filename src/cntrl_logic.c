@@ -369,7 +369,7 @@ void control_pid()
     }
     else
     {
-        usleep(100);
+        
         uint8_t i_control = 10; 
         uint8_t duty_cycle = setpoint_to_duty_cycle(setpoint); 
         set_rpm = duty_cycle_to_rpm(duty_cycle); 
@@ -393,7 +393,6 @@ void control_pid()
         if(output_setpoint > RESOLUTION)
         {
         	output_setpoint = RESOLUTION;
-        	xil_printf("Error: PID control loop producing too high a value\n\r");
         }
         HB3_setPWM(pwmEnable, output_setpoint); //change the motor speed by set PWM
     }
@@ -497,7 +496,7 @@ uint8_t setpoint_to_duty_cycle(uint16_t setpoint)
  */
 uint8_t duty_cycle_to_rpm(uint8_t duty_cycle)
 {
-    return duty_cycle - 3; //from characterization between duty cycle and rpm
+    return duty_cycle - 4; //from characterization between duty cycle and rpm
 }
 
 /**
@@ -507,7 +506,7 @@ uint8_t duty_cycle_to_rpm(uint8_t duty_cycle)
  */
 uint16_t setpoint_from_rpm(uint8_t rpm)
 {
-    uint8_t duty_cycle = rpm + 3; 
+    uint8_t duty_cycle = rpm + 4; //from characterization between duty cycle and rpm
     uint16_t setpoint = (uint16_t)((float)(duty_cycle) / 100 * RESOLUTION); 
 
     return setpoint; 

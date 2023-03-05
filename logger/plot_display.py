@@ -47,7 +47,7 @@ def updateData(i):
     parsed_data = data.split(b' ')
     #check for control signal
     if (parsed_data[0] != b'DB'):
-        print(data)
+        print(data.decode(), end="")
         return 
     if (i == 1000):
         file.close()
@@ -84,7 +84,7 @@ def updateData(i):
     ax.plot(time, Kd, label=f'Kd = {curr_Kd}')
     
     plt.xlim([0, max(100,i)])
-    plt.ylim([-10,100])
+    plt.ylim([-20,100])
     plt.title("Paramaters over Time")
     plt.xlabel("Time in Seconds")
     plt.ylabel("Paramaters")
@@ -118,5 +118,5 @@ if __name__ == "__main__":
     writer = csv.writer(file)
     header = ['time', 'set rpm', 'read rpm', 'error', 'Kp', 'Ki', 'Kd']
     writer.writerow(header)
-    graph = animation.FuncAnimation(data_display, updateData, interval=200, save_count=1000)
+    graph = animation.FuncAnimation(data_display, updateData, interval=100, save_count=1000)
     plt.show()

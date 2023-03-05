@@ -12,7 +12,9 @@
  ```
 # To run while specifying filename: 
  ```sh
- python3 plot_display.py -port /dev/tty.usbserial-FPGA -outfile testPID.csv
+ python3 plot_display.py -port /dev/tty.usbserial-FPGA -outfile csv/testPID.csv
  ```
 # About
 This script runs a live grapher of the data received over uart from the FPGA (max time duration is 1000 seconds). It also generates a csv file of the corresponding data. 
+
+To start the plotter, have the FPGA running, execute the script and press the BtnL on the FPGA.
