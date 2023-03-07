@@ -1,19 +1,11 @@
 `timescale 1ns / 1ps
 //////////////////////////////////////////////////////////////////////////////////
-// Company: 
-// Engineer: 
+// Company: PSU ECE 544 Winter 2023
+// Engineer: Stephen, Drew, Noah
 // 
 // Create Date: 02/26/2023 08:50:50 PM
-// Design Name: 
 // Module Name: ticks
-// Project Name: 
-// Target Devices: 
-// Tool Versions: 
-// Description: 
-// 
-// Dependencies: 
-// 
-// Revision:
+
 // Revision 0.01 - File Created
 // Additional Comments: counts ticks per 0.25s using 100 MHz AXI clock as input
 // samples every 0.25s, multiplies by 4 to give approximation for ticks/second

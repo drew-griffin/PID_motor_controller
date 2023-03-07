@@ -1,22 +1,14 @@
 `timescale 1ns / 1ps
 //////////////////////////////////////////////////////////////////////////////////
-// Company: 
-// Engineer: 
+// Company: PSU ECE 544 Winter 2023
+// Engineer: Stephen, Drew, Noah
 // 
-// Create Date: 02/25/2023 06:40:23 PM
-// Design Name: 
+// Create Date: 02/26/2023 08:50:50 PM
 // Module Name: pmodhb3
-// Project Name: 
-// Target Devices: 
-// Tool Versions: 
-// Description: 
-// 
-// Dependencies: 
-// 
-// Revision:
+
 // Revision 0.01 - File Created
-// Additional Comments:
-// 
+// Additional Comments: creates the PWM duty cycle for a 2KHz output using 100MHz
+//  					AXI clock. Based on the rgbPWM module provided by Roy Kravitz
 //////////////////////////////////////////////////////////////////////////////////
 
 

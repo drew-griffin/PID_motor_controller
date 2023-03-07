@@ -38,6 +38,15 @@ XStatus HB3_initialize(uint32_t baseaddr_p)
     return XST_SUCCESS; 
 }
 
+/**
+ * Sets the PWM output of the HB3
+ *
+ * @param   enable enable signal to turn the PWM signal on or off
+ *          DC     u16 value truncated to 10 bits to set duty cycle
+ *
+ * @return  void
+ *
+ */
 void HB3_setPWM(bool enable, u16 DC)
 {
 	u32 cntlreg;
@@ -54,7 +63,15 @@ void HB3_setPWM(bool enable, u16 DC)
 	}
 }
 
-// returns the ticks/second
+
+/**
+ * Returns the number of ticks per second, value updated every 0.25s
+ *
+ * @param   void
+ *
+ * @return  returns count if initialized it returns the ticks/second
+ *
+ */
 uint32_t HB3_getTicks(void)
 {
     uint32_t count;
@@ -67,6 +84,15 @@ uint32_t HB3_getTicks(void)
     return count;
 }
 
+
+/**
+ * Returns the RPM of the motor, value updated every 0.25s
+ *
+ * @param   void
+ *
+ * @return  returns rpm if initialized returns the rpm
+ *
+ */
 uint32_t HB3_getRPM(void)
 {
     uint32_t rpm;
