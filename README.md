@@ -1,4 +1,5 @@
 # Version 1.0 - PID Motor Controller 
+https://github.com/drew-griffin/PID_motor_controller
 
 Drew Seidel (dseidel@pdx.edu)\
 Stephen Weeks (stweeks@pdx.edu)\
