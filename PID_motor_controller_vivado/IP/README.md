@@ -1,1 +1,1 @@
-This directory will contain custom IP for the motor controller
+This directory contains all IPP for the motor controller. See main README.
